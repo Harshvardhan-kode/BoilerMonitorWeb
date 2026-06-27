@@ -1,0 +1,374 @@
+﻿@model BoilerMonitorWeb.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "SCADA Control Room Hub Console";
+}
+
+<style>
+    :root {
+        --bg-primary: #0d1117;
+        --bg-secondary: #161b22;
+        --bg-card: #1c2331;
+        --border-color: #2a3342;
+        --text-primary: #e6edf3;
+        --text-secondary: #8b949e;
+        --green-neon: #00ff88;
+        --yellow-neon: #ffd700;
+        --orange-neon: #ff7b00;
+        --red-neon: #ff3b3b;
+        --blue-neon: #4da6ff;
+    }
+
+    body {
+        background-color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .boiler-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.2rem;
+        position: relative;
+    }
+
+    .alarm-indicator {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #555;
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    .alarm-active {
+        background: var(--red-neon);
+        box-shadow: 0 0 12px var(--red-neon);
+        animation: pulse-alarm 1s infinite;
+    }
+
+    .boiler-graphic {
+        width: 100%;
+        height: 120px;
+        position: relative;
+        margin-bottom: 1rem;
+        background: linear-gradient(to bottom, #2b3b4c, #1e2c3a);
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #3a4a5a;
+    }
+
+    .boiler-body {
+        position: absolute;
+        width: 60%;
+        height: 60px;
+        background: linear-gradient(180deg, #4a5c6b, #3a4a5a);
+        border-radius: 20px;
+        bottom: 15px;
+        left: 20%;
+    }
+
+    .pipe {
+        position: absolute;
+        background: #4a5c6b;
+        height: 14px;
+        border-radius: 5px;
+    }
+
+    .pipe-left {
+        left: 10px;
+        bottom: 45px;
+        width: 30%;
+        transform: rotate(-5deg);
+    }
+
+    .pipe-right {
+        right: 10px;
+        bottom: 45px;
+        width: 30%;
+        transform: rotate(5deg);
+    }
+
+    .pipe-bottom {
+        bottom: 5px;
+        left: 40%;
+        width: 20%;
+        height: 8px;
+        background: #ff7b00;
+        box-shadow: 0 0 12px #ff7b00;
+    }
+
+    .flame {
+        position: absolute;
+        bottom: 2px;
+        left: 45%;
+        width: 20px;
+        height: 25px;
+        background: linear-gradient(to top, #ff7b00, #ffd700);
+        border-radius: 50% 50% 20% 20%;
+        animation: flicker 0.3s infinite alternate;
+    }
+
+    .gauge {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: conic-gradient(from 135deg, var(--green-neon) 0deg 90deg, var(--yellow-neon) 90deg 150deg, var(--orange-neon) 150deg 200deg, var(--red-neon) 200deg 270deg);
+        position: relative;
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+        .gauge::after {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            background: var(--bg-card);
+            border-radius: 50%;
+        }
+
+    .gauge-needle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 2px;
+        height: 40%;
+        background: #fff;
+        transform-origin: bottom center;
+        transform: translate(-50%, -100%) rotate(-45deg);
+        transition: transform 0.4s;
+        z-index: 2;
+    }
+
+    .gauge-value {
+        position: absolute;
+        bottom: 12%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.7rem;
+        color: var(--text-primary);
+        z-index: 3;
+    }
+
+    .sensor-value {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: var(--text-primary);
+    }
+
+    .sensor-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+    }
+
+    .chart-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1rem;
+    }
+</style>
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 text-white">
+        <h4>🏭 SCADA Plant Live Stream Overview</h4>
+        <span class="badge bg-primary px-3 py-2"><i class="fas fa-network-wired me-2"></i>SignalR Loop Running</span>
+    </div>
+
+    <div class="row g-3 mb-4 text-white text-center">
+        <div class="col-md-4">
+            <div class="p-3 rounded border" style="background: #161b22; border-color: #2a3342;">
+                <div class="sensor-label">Online Fleet Assets</div>
+                <div class="fs-3 fw-bold text-success">@Model.TotalBoilersOnline</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 rounded border" style="background: #161b22; border-color: #2a3342;">
+                <div class="sensor-label">Active Alarm Flags</div>
+                <div class="fs-3 fw-bold text-danger">@Model.TotalActiveAlarms</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 rounded border" style="background: #161b22; border-color: #2a3342;">
+                <div class="sensor-label">Mean Line Pressure</div>
+                <div class="fs-3 fw-bold text-info">@Model.AverageSystemPressure?.ToString("F1") Bar</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var boiler in Model.Boilers)
+        {
+            <div class="col-xl-4 col-md-6">
+                <div class="boiler-card text-white" id="card-@boiler.BoilerID">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-5 fw-bold">
+                            @boiler.Name
+                            <span id="indicator-@boiler.BoilerID" class="alarm-indicator @(boiler.ActiveAlarmCount > 0 ? "alarm-active" : "")"></span>
+                        </span>
+                        <span class="badge bg-success">ONLINE</span>
+                    </div>
+
+                    <div class="boiler-graphic">
+                        <div class="boiler-body"></div>
+                        <div class="pipe pipe-left"></div><div class="pipe pipe-right"></div><div class="pipe pipe-bottom"></div>
+                        <div class="flame"></div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="sensor-label">Steam Pressure</div>
+                            <div class="sensor-value text-success" id="press-@boiler.BoilerID">@boiler.SteamPressure?.ToString("F1") bar</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="sensor-label">Core Temperature</div>
+                            <div class="sensor-value text-white" id="temp-@boiler.BoilerID">@boiler.SteamTemp?.ToString("F0") °C</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="gauge">
+                            <div class="gauge-needle" id="needle-@boiler.BoilerID"></div>
+                            <div class="gauge-value" id="gauge-txt-@boiler.BoilerID">@boiler.SteamPressure</div>
+                        </div>
+                        <div>
+                            <div class="sensor-label">Water Deviation</div>
+                            <div class="sensor-value text-info" id="water-@boiler.BoilerID">@boiler.WaterLevel?.ToString("+0;-0;0") mm</div>
+                        </div>
+                        <div>
+                            <div class="sensor-label">Mass Steam Flow</div>
+                            <div class="sensor-value text-warning" id="flow-@boiler.BoilerID">@boiler.SteamFlow?.ToString("F0") kg/h</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="chart-container mt-4 text-white">
+        <h5 class="mb-3"><i class="fas fa-chart-line me-2 text-primary"></i> Real-Time Pressure Trend Output (Live Rolling Stream)</h5>
+        <div style="height: 200px; position: relative;">
+            <canvas id="scadaLiveChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+    const maxPoints = 20;
+    const chartCtx = document.getElementById('scadaLiveChart').getContext('2d');
+    const liveChart = new Chart(chartCtx, {
+    type: 'line',
+    data: {
+    labels: [],
+    datasets: [{
+    label: 'Boiler Unit #1 Pressure (Bar)',
+    data: [],
+    borderColor: '#4da6ff',
+    backgroundColor: 'rgba(77,166,255,0.08)',
+    fill: true,
+    tension: 0.2,
+    pointRadius: 1
+    }]
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#e6edf3' } } },
+    scales: {
+    x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
+    y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' }, min: 6, max: 12 }
+    }
+    }
+    });
+
+    const signalRConn = new signalR.HubConnectionBuilder()
+    .withUrl("/telemetryHub")
+    .withAutomaticReconnect()
+    .build();
+
+    signalRConn.on("ReceiveTelemetryUpdate", (data) => {
+    const bId = data.boilerId;
+
+    const pressEl = document.getElementById(`press-${bId}`);
+    if(pressEl) pressEl.innerText = data.pressure.toFixed(1) + " bar";
+
+    const tempEl = document.getElementById(`temp-${bId}`);
+    if(tempEl) tempEl.innerText = data.temp.toFixed(0) + " °C";
+
+    const flowEl = document.getElementById(`flow-${bId}`);
+    if(flowEl) flowEl.innerText = data.flow.toFixed(0) + " kg/h";
+
+    const waterEl = document.getElementById(`water-${bId}`);
+    if(waterEl) waterEl.innerText = (data.waterLevel >= 0 ? "+" : "") + data.waterLevel.toFixed(0) + " mm";
+
+    const gTxtEl = document.getElementById(`gauge-txt-${bId}`);
+    if(gTxtEl) gTxtEl.innerText = data.pressure.toFixed(1);
+
+    const needleEl = document.getElementById(`needle-${bId}`);
+    if(needleEl) {
+    const rot = -45 + (((data.pressure - 8.0) / (11.0 - 8.0)) * 180);
+    needleEl.style.transform = `translate(-50%, -100%) rotate(${rot}deg)`;
+    }
+
+    const indEl = document.getElementById(`indicator-${bId}`);
+    if(indEl) {
+    if(data.activeAlarmsCount > 0) indEl.classList.add("alarm-active");
+    else indEl.classList.remove("alarm-active");
+    }
+
+    if (bId === 1) {
+    liveChart.data.labels.push(data.timestamp);
+    liveChart.data.datasets[0].data.push(data.pressure);
+    if (liveChart.data.labels.length > maxPoints) {
+    liveChart.data.labels.shift();
+    liveChart.data.datasets[0].data.shift();
+    }
+    liveChart.update('none');
+    }
+    });
+
+    async function startSignalR() {
+    try {
+    await signalRConn.start();
+    console.log("Connected to SCADA Hub.");
+    await signalRConn.invoke("JoinDashboard");
+    } catch (err) {
+    setTimeout(startSignalR, 5000);
+    }
+    }
+    startSignalR();
+</script>
+
+<style>
+    @@keyframes pulse-alarm {
+    0% {
+    opacity: 1;
+    }
+
+    50% {
+    opacity: 0.3;
+    }
+
+    100% {
+    opacity: 1;
+    }
+    }
+
+    @@keyframes flicker {
+    from {
+    transform: scaleY(1);
+    opacity: 0.9;
+    }
+
+    to {
+    transform: scaleY(1.2);
+    opacity: 1;
+    }
+    }
+</style>

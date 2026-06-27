@@ -1,0 +1,79 @@
+﻿@model BoilerMonitorWeb.Application.DTOs.BatchValidationResultDto
+
+@{
+    ViewData["Title"] = "Pharma Batch Compliance Validation";
+}
+
+<div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success shadow-sm alert-dismissible fade show" role="alert">
+            <span>✅ @TempData["SuccessMessage"]</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🔬 Stage 9: Operational Batch Validation</h2>
+        <span class="badge p-3 fs-5 @(Model.Passed ? "bg-success" : "bg-danger")">
+            @(Model.Passed ? "AUTOMATED COMPLIANCE: PASS" : "AUTOMATED COMPLIANCE: FAIL")
+        </span>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0 bg-light">
+                <div class="card-header bg-dark text-white fw-bold">📉 Validation Profile Summary</div>
+                <div class="card-body">
+                    <p class="text-muted">@Model.Summary</p>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Total Batch Execution Time:</span>
+                            <span class="badge bg-secondary rounded-pill">@Model.TotalMinutes minutes</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Detected Out-of-Spec Excursions:</span>
+                            <span class="badge bg-danger rounded-pill">@Model.ViolationMinutes minutes</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Allowed Boundary Tolerance (5%):</span>
+                            <span class="badge bg-success rounded-pill">@Model.ToleranceMinutes minutes</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-primary text-white fw-bold">✍️ GMP Electronic Signature (21 CFR Part 11)</div>
+                <div class="card-body">
+                    <form asp-action="Approve" asp-controller="BatchApproval" method="post">
+                        <input type="hidden" name="id" value="@Context.Request.RouteValues["id"]" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Confirm Identity Authentication Key (Password)</label>
+                            <input type="password" name="signaturePassword" class="form-control" placeholder="••••••••" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Regulatory Justification Context Code</label>
+                            <select name="justificationReason" class="form-select" required>
+                                <option value="">-- Select Code Template --</option>
+                                <option value="Product parameters verified">Product parameters verified</option>
+                                <option value="QA inspection passed">QA inspection passed</option>
+                                <option value="Deviation approved by supervisor">Deviation approved by supervisor</option>
+                                <option value="No adverse trends detected">No adverse trends detected</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success flex-grow-1">Approve Operational Batch</button>
+                            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-danger">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

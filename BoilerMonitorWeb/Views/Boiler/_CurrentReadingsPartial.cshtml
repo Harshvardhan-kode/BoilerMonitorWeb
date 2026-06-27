@@ -1,0 +1,44 @@
+﻿@model BoilerMonitorWeb.Application.Domain.Entities.Telemetry
+
+<div class="col">
+    <div class="sensor-gauge">
+        <div class="label">Steam Pressure</div>
+        <div class="value">@(Model?.SteamPressure_Bar.ToString("F1") ?? "--") <span class="fs-6 text-muted">bar</span></div>
+    </div>
+</div>
+<div class="col">
+    <div class="sensor-gauge">
+        <div class="label">Steam Temp</div>
+        <div class="value">@(Model?.SteamTemp_C.ToString("F1") ?? "--") <span class="fs-6 text-muted">°C</span></div>
+    </div>
+</div>
+<div class="col">
+    <div class="sensor-gauge">
+        <div class="label">Water Level</div>
+        <div class="value">@(Model?.WaterLevel_mm.ToString("F0") ?? "--") <span class="fs-6 text-muted">mm</span></div>
+    </div>
+</div>
+<div class="col">
+    <div class="sensor-gauge">
+        <div class="label">Feedwater Temp</div>
+        <div class="value">@(Model?.FeedwaterTemp_C.ToString("F1") ?? "--") <span class="fs-6 text-muted">°C</span></div>
+    </div>
+</div>
+<div class="col">
+    <div class="sensor-gauge">
+        <div class="label">Flue Gas Temp</div>
+        <div class="value">@(Model?.FlueGasTemp_C.ToString("F1") ?? "--") <span class="fs-6 text-muted">°C</span></div>
+    </div>
+</div>
+<div class="col">
+    <div class="sensor-gauge">
+        <div class="label">O₂ Percentage</div>
+        <div class="value">@(Model?.O2_Percentage.ToString("F1") ?? "--") <span class="fs-6 text-muted">%</span></div>
+    </div>
+</div>
+<div class="col">
+    <div class="sensor-gauge">
+        <div class="label">Steam Flow</div>
+        <div class="value">@(Model?.SteamFlow_KGHR.ToString("F0") ?? "--") <span class="fs-6 text-muted">kg/h</span></div>
+    </div>
+</div>
