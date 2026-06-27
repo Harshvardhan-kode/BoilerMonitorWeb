@@ -142,9 +142,20 @@ namespace BoilerMonitorWeb
                 }
             }
 
-            await EnsureUserCreatedAsync("admin@boilerplant.com", "Admin@123", "Admin");
-            await EnsureUserCreatedAsync("engineer@boilerplant.com", "Engineer@123", "Engineer");
-            await EnsureUserCreatedAsync("operator@boilerplant.com", "Operator@123", "Operator");
+           // Use environment variables for credentials
+var adminPassword = Environment.GetEnvironmentVariable("DEFAULT_ADMIN_PASSWORD") 
+    ?? "Admin@123"; // Only use default in dev
+var engineerPassword = Environment.GetEnvironmentVariable("DEFAULT_ENGINEER_PASSWORD") 
+    ?? "Engineer@123";
+var operatorPassword = Environment.GetEnvironmentVariable("DEFAULT_OPERATOR_PASSWORD") 
+    ?? "Operator@123";
+
+if (app.Environment.IsDevelopment())
+{
+    await EnsureUserCreatedAsync("admin@boilerplant.com", adminPassword, "Admin");
+    await EnsureUserCreatedAsync("engineer@boilerplant.com", engineerPassword, "Engineer");
+    await EnsureUserCreatedAsync("operator@boilerplant.com", operatorPassword, "Operator");
+}
         }
     }
 }
